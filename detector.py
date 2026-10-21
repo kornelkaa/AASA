@@ -13,10 +13,9 @@ class SceneDetector:
             boxes = result.boxes
             for box in boxes:
                 cls_id = int(box.cls[0])
+
                 label = self.model.names[cls_id]
-
                 confidence = box.conf[0].item() # float(box.conf[0])
-
                 xyxy = [round(coord, 1) for coord in box.xyxy[0].tolist()]
 
                 detections.append({
