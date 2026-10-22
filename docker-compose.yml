@@ -1,7 +1,6 @@
 services:
   aasa:
     build: .
-    image: aasa
     container_name: aasa
     ports:
       - "8000:8000"
