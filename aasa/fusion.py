@@ -36,8 +36,8 @@ def calculate_distances(nusc, sample_token, detections):
     return detections
 
 if __name__ == '__main__':
-    from dataset import NuScenesDataset
-    from detector import SceneDetector
+    from aasa.dataset import NuScenesDataset
+    from aasa.detector import SceneDetector
     from nuscenes.nuscenes import NuScenes
 
     nusc = NuScenes(version='v1.0-mini', dataroot="./data/nuscenes", verbose=False)

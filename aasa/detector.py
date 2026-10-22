@@ -1,8 +1,12 @@
+from pathlib import Path
 from ultralytics import YOLO
 
+MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "yolov8n.pt"
+
+
 class SceneDetector:
-    def __init__(self, model_name='yolov8n.pt'):
-        self.model = YOLO(model_name)
+    def __init__(self, model_name=MODEL_PATH):
+        self.model = YOLO(str(model_name))
 
     def detect(self, image):
         results = self.model(image, verbose=False)
@@ -29,7 +33,7 @@ class SceneDetector:
 
 if __name__ == '__main__':
     from nuscenes.nuscenes import NuScenes
-    from dataset import NuScenesDataset
+    from aasa.dataset import NuScenesDataset
 
     nusc = NuScenes(version='v1.0-mini', dataroot="data/nuscenes", verbose=True)
 

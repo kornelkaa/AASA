@@ -65,9 +65,9 @@ Respond strictly with a valid JSON object matching this exact schema:
 
 if __name__ == '__main__':
     from nuscenes.nuscenes import NuScenes
-    from dataset import NuScenesDataset
-    from detector import SceneDetector
-    from fusion import calculate_distances
+    from aasa.dataset import NuScenesDataset
+    from aasa.detector import SceneDetector
+    from aasa.fusion import calculate_distances
 
     print("--- FULL PIPELINE RUNNING ---")
     nusc = NuScenes(version="v1.0-mini", dataroot="data/nuscenes", verbose=False)

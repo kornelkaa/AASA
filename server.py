@@ -6,10 +6,10 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse, Response
 from nuscenes.nuscenes import NuScenes
 
-from dataset import NuScenesDataset
-from detector import SceneDetector
-from fusion import calculate_distances
-from agent import AutonomousSceneAgent
+from aasa.dataset import NuScenesDataset
+from aasa.detector import SceneDetector
+from aasa.fusion import calculate_distances
+from aasa.agent import AutonomousSceneAgent
 
 BASE_DIR = Path(__file__).resolve().parent
 DATAROOT = BASE_DIR / "data" / "nuscenes"

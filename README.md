@@ -18,19 +18,30 @@ An end-to-end pipeline that analyzes a driving scene from a front camera and a l
 
 ## Project Structure
 
-| File | Purpose |
-| --- | --- |
-| `server.py` | FastAPI application: web page, API routes, and model loading at startup |
-| `static/index.html` | Single-page web interface (HTML, CSS, and JavaScript) |
-| `main.py` | Runs the full pipeline once from the command line and saves the results to `outputs/` |
-| `dataset.py` | Loads front camera frames from a nuScenes scene |
-| `detector.py` | YOLOv8 object detection wrapper |
-| `fusion.py` | Lidar-to-camera projection and per-object distance estimation |
-| `agent.py` | LLM agent that produces the structured safety decision |
-| `hazard_model.py` | Prototype PyTorch MLP that scores hazard per object (standalone, not used by the server) |
-| `tracking.py` | Multi-frame distance tracker that estimates approach speed (standalone, not used by the server) |
-| `Dockerfile` | Container image definition |
-| `.dockerignore` | Keeps data, secrets, and local environments out of the image |
+```
+.
+├── server.py              # FastAPI app: web page, API routes, model loading
+├── main.py                # Runs the full pipeline once and saves results to outputs/
+├── aasa/                  # Core pipeline package
+│   ├── dataset.py         # Loads front camera frames from a nuScenes scene
+│   ├── detector.py        # YOLOv8 object detection wrapper
+│   ├── fusion.py          # Lidar-to-camera projection and distance estimation
+│   └── agent.py           # LLM agent that produces the safety decision
+├── experimental/          # Not used by the server yet
+│   ├── hazard_model.py    # Prototype PyTorch MLP hazard scorer
+│   └── tracking.py        # Multi-frame distance tracker and approach speed
+├── models/
+│   └── yolov8n.pt         # YOLOv8 weights
+├── static/
+│   └── index.html         # Web interface (HTML, CSS, JavaScript)
+├── scripts/
+│   └── render_sample.py   # Plots nuScenes sample data (manual use)
+├── tests/                 # Offline unit tests
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+└── requirements.txt
+```
 
 ## Requirements
 
@@ -145,6 +156,14 @@ python main.py
 ```
 
 This writes `outputs/detected_scene.jpg` and `outputs/agent_decision.json`.
+
+## Running the Tests
+
+```bash
+python -m pytest
+```
+
+The tests run offline. They don't need the dataset or a Groq API key.
 
 ## Security Notes
 

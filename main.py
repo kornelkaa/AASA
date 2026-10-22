@@ -1,10 +1,10 @@
 import os
 import json
 from nuscenes.nuscenes import NuScenes
-from dataset import NuScenesDataset
-from detector import SceneDetector
-from fusion import calculate_distances
-from agent import AutonomousSceneAgent
+from aasa.dataset import NuScenesDataset
+from aasa.detector import SceneDetector
+from aasa.fusion import calculate_distances
+from aasa.agent import AutonomousSceneAgent
 
 
 def run_pipeline(scene_index=0, frame_index=0):
