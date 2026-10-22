@@ -1,56 +1,51 @@
 import torch
 from torch.utils.data import Dataset
-from PIL import Image
 from torchvision import transforms
+from PIL import Image
+from typing import Tuple, List
+
 
 class NuScenesDataset(Dataset):
-    def __init__(self, nusc, transform=None):
+    """
+    Memory-efficient PyTorch Dataset for loading camera frames from a specific NuScenes scene.
+    """
+
+    def __init__(self, nusc, scene_index: int = 0):
         self.nusc = nusc
-        self.image_paths = []
-        self.transform = transform
+        self.scene_index = scene_index
+        self.scene = nusc.scene[scene_index]
 
-        for scene in self.nusc.scene:
-           current_data_token = scene['first_sample_token']
+        self.sample_tokens: List[str] = []
+        self.cam_tokens: List[str] = []
 
-           while current_data_token != '':
-               sample = self.nusc.get('sample', current_data_token)
+        # Traverse all sequential samples within the selected scene
+        curr_sample_token = self.scene['first_sample_token']
+        while curr_sample_token:
+            self.sample_tokens.append(curr_sample_token)
+            sample = nusc.get('sample', curr_sample_token)
 
-               cam_front_token = sample['data']['CAM_FRONT']
+            # Extract front camera token for this sample frame
+            cam_token = sample['data']['CAM_FRONT']
+            self.cam_tokens.append(cam_token)
 
-               data_path,_,_ = self.nusc.get_sample_data(cam_front_token)
+            # Move to the next chronological frame in the scene
+            curr_sample_token = sample['next']
 
-               self.image_paths.append(data_path)
+    def __len__(self) -> int:
+        return len(self.cam_tokens)
 
-               current_data_token = sample['next']
-
-    def __len__(self):
-        return len(self.image_paths)
-
-
-    def __getitem__(self,idx):
-        img_path = self.image_paths[idx]
-        image = Image.open(img_path).convert('RGB')
-
-        if self.transform:
-            image = self.transform(image)
-
+    def __getitem__(self, idx: int) -> Image.Image:
+        cam_token = self.cam_tokens[idx]
+        image_path, _, _ = self.nusc.get_sample_data(cam_token)
+        image = Image.open(image_path).convert("RGB")
         return image
 
 
 if __name__ == '__main__':
     from nuscenes.nuscenes import NuScenes
-    from torch.utils.data import DataLoader
 
-    my_transform = transforms.Compose([
-        transforms.Resize((224,224)),
-        transforms.ToTensor()
-    ])
-
-    nusc = NuScenes(version="v1.0-mini", dataroot="data/nuscenes", verbose=False)
-    dataset = NuScenesDataset(nusc, transform=my_transform)
-
-    dataloader = DataLoader(dataset,batch_size=4, shuffle=True)
-
-    first_batch = next(iter(dataloader))
-
-    print(first_batch.shape)
+    nusc = NuScenes(version='v1.0-mini', dataroot='data/nuscenes', verbose=False)
+    test_dataset = NuScenesDataset(nusc, scene_index=1)
+    print("--- Dataset Test ---")
+    print(f"Target Scene: {nusc.scene[1]['name']}")
+    print(f"Total Frames Loaded: {len(test_dataset)}")
