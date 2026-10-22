@@ -1,27 +1,22 @@
 import json
 import os
-from google import genai
-from google.genai import types
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class AutonomousSceneAgent:
     def __init__(self, api_key=None):
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        
+        self.api_key = api_key or os.getenv("GROQ_API_KEY")
         if not self.api_key:
-            raise ValueError(
-                "Nem található GEMINI_API_KEY! Állítsd be a környezeti változót, "
-                "vagy add át az api_key paramétert a constructorban."
-            )
-            
-        self.client = genai.Client(api_key=self.api_key)
+            raise ValueError("Missing the GROQ_API_KEY!")
+
+        self.client = OpenAI(
+            base_url="https://api.groq.com/openai/v1",
+            api_key=self.api_key
+        )
 
     def build_prompt(self, fusion_results):
-        """
-        A szenzorfúzió számaiból angol nyelvű leírást készít az LLM számára.
-        """
         detected_summary = []
         for obj in fusion_results:
             label = obj['label'].upper()
@@ -58,25 +53,15 @@ Respond strictly with a valid JSON object matching this exact schema:
 
     def analyze_scene(self, fusion_results):
         prompt = self.build_prompt(fusion_results)
-        
-        print("\nconnecting to ai api")
-        
-        response = self.client.models.generate_content(
-            model='gemini-3.1-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.1
-            )
+
+        response = self.client.chat.completions.create(
+            model="qwen/qwen3.8-27b",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            temperature=0.1
         )
 
-        try:
-            decision = json.loads(response.text)
-            return decision
-        except json.JSONDecodeError:
-            print("Hiba a JSON feldolgozásakor! Nyers kimenet:", response.text)
-            return {"error": "Invalid JSON response", "raw": response.text}
-
+        return json.loads(response.choices[0].message.content)
 
 if __name__ == '__main__':
     from nuscenes.nuscenes import NuScenes

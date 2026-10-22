@@ -1,0 +1,7 @@
+{
+    "scene_summary": "The ego-vehicle is approaching a truck at 12.3 meters with a low-confidence pedestrian detection at 16.58 meters, while multiple cars are detected further ahead between 35 and 52 meters.",
+    "risk_level": "HIGH",
+    "critical_object": "TRUCK at 12.3 meters",
+    "recommended_action": "SLOW_DOWN",
+    "reasoning": "The truck at 12.3 meters is the closest high-confidence object, requiring immediate speed reduction to maintain a safe following distance. The low-confidence pedestrian detection (26%) is likely a false positive but warrants caution, making immediate braking unnecessary unless the truck stops suddenly."
+}
