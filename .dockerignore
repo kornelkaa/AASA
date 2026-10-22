@@ -1,0 +1,11 @@
+.git
+.idea
+.vscode
+.venv
+venv
+.DS_Store
+.env
+__pycache__
+*.pyc
+data
+outputs

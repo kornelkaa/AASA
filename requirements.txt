@@ -1,0 +1,10 @@
+torch
+torchvision
+ultralytics
+nuscenes-devkit
+openai
+fastapi
+uvicorn[standard]
+python-dotenv
+numpy
+pillow
