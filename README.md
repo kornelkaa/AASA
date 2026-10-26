@@ -172,4 +172,6 @@ The tests run offline. They don't need the dataset or a Groq API key.
 
 ## License
 
-No license has been specified yet.
+This project is licensed under the [MIT License](LICENSE).
+
+Note that third-party components have their own licenses. Ultralytics (YOLOv8) is licensed under AGPL-3.0, and the nuScenes dataset is licensed under CC BY-NC-SA 4.0 for non-commercial use only.
