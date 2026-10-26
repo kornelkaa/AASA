@@ -11,7 +11,7 @@ def run_pipeline(scene_index=0, frame_index=0):
     print("Pipeline starts")
 
 
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs("../outputs", exist_ok=True)
 
     # nuscenes
     print("Nuscenes initalizing")
@@ -35,7 +35,7 @@ def run_pipeline(scene_index=0, frame_index=0):
 
     # detected picture saved as visualization
     raw_results = detector.model(image, conf=0.15, verbose=False)
-    output_image_path = "outputs/detected_scene.jpg"
+    output_image_path = "../outputs/detected_scene.jpg"
     raw_results[0].save(filename=output_image_path)
     print(f"  -> Saved: {output_image_path}")
 
@@ -52,7 +52,7 @@ def run_pipeline(scene_index=0, frame_index=0):
 
 
     # saving to file
-    output_json_path = "outputs/agent_decision.json"
+    output_json_path = "../outputs/agent_decision.json"
     with open(output_json_path, "w", encoding="utf-8") as f:
         json.dump(decision, f, indent=4, ensure_ascii=False)
     print("saved")
