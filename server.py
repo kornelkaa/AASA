@@ -6,6 +6,11 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse, Response
 from nuscenes.nuscenes import NuScenes
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from starlette.requests import Request
+
 from aasa.dataset import NuScenesDataset
 from aasa.detector import SceneDetector
 from aasa.fusion import calculate_distances
@@ -16,6 +21,11 @@ DATAROOT = BASE_DIR / "data" / "nuscenes"
 
 state = {}
 
+def client_ip(request: Request) -> str:
+    return request.headers.get("cf-connecting-ip") or get_remote_address(request)
+
+
+limiter = Limiter(key_func=client_ip)
 
 @asynccontextmanager
 async def lifespan(app):
@@ -28,6 +38,8 @@ async def lifespan(app):
 
 app = FastAPI(title="Agentic Autonomous Scene Analyzer", lifespan=lifespan)
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 def get_dataset(scene: int, frame: int) -> NuScenesDataset:
     nusc = state["nusc"]
@@ -67,7 +79,8 @@ def frame_image(scene: int = Query(0, ge=0), frame: int = Query(0, ge=0)):
 
 
 @app.post("/analyze")
-def analyze(scene: int = Query(0, ge=0), frame: int = Query(0, ge=0)):
+@limiter.limit("3/10 seconds")
+def analyze(request: Request, scene: int = Query(0, ge=0), frame: int = Query(0, ge=0)):
     dataset = get_dataset(scene, frame)
     image = dataset[frame]
     detections = state["detector"].detect(image)
