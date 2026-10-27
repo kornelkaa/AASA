@@ -1,0 +1,32 @@
+name: Deploy dev
+
+on:
+  push:
+    branches: [dev]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::197215504007:role/github-deploy-role
+          aws-region: eu-north-1
+
+      - name: Run deploy script on EC2
+        env:
+          INSTANCE_ID: ${{ vars.INSTANCE_ID }}
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["/opt/aasa/deploy-dev.sh"]' \
+            --query "Command.CommandId" --output text)
+          aws ssm wait command-executed \
+            --command-id "$CMD_ID" \
+            --instance-id "$INSTANCE_ID"
+
