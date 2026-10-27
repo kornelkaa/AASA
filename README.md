@@ -167,7 +167,9 @@ The tests run offline. They don't need the dataset or a Groq API key.
 
 ## Security Notes
 
-- The `/analyze` endpoint calls a paid LLM API on every request, and the application has no authentication. Add authentication and rate limiting before exposing it to the internet.
+- The `/analyze` endpoint calls a paid LLM API on every request. It is rate limited to 3 requests per 10 seconds per client IP (using [SlowAPI](https://github.com/laurentS/slowapi)). Requests over the limit get HTTP `429 Too Many Requests`.
+- The application still has no authentication. Add authentication before exposing it to the internet.
+- The rate limiter reads the client IP from the `cf-connecting-ip` header when present, and otherwise from the connection address. Only use `cf-connecting-ip` behind a proxy that sets it.
 - Never commit `.env` or share your API key.
 
 ## License
