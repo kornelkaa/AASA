@@ -11,7 +11,7 @@ from aasa.detector import SceneDetector
 from aasa.fusion import calculate_distances
 from aasa.agent import AutonomousSceneAgent
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 DATAROOT = BASE_DIR / "data" / "nuscenes"
 
 state = {}
