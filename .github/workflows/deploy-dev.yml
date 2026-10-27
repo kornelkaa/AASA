@@ -5,16 +5,17 @@ on:
     branches: [dev]
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::197215504007:role/github-deploy-role
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
       - name: Run deploy script on EC2
