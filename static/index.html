@@ -183,7 +183,11 @@
         const response = await fetch(url, { method: "POST" });
         if (!response.ok) {
           const body = await response.json().catch(() => ({}));
-          throw new Error(body.detail || `Request failed (${response.status})`);
+          if (response.status === 429){throw new Error(body.detail || `Rate limit exceeded(${response.status})`);}
+          else if (response.status === 500){throw new Error(body.detail || `API key is incorrect (mostly)(${response.status})`);}
+          else{
+            throw new Error(body.detail || `Request failed (${response.status})`);
+          }
         }
         const result = await response.json();
         if (frameImage.complete && frameImage.naturalWidth) {
