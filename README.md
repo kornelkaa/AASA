@@ -1,6 +1,8 @@
-# Agentic Autonomous Scene Analyzer
+# Agentic Autonomous Scene Analyzer (AASA)
 
-An end-to-end pipeline that analyzes a driving scene from a front camera and a lidar sensor, detects and localizes objects, and asks an LLM agent for a structured safety decision. Results are served through a FastAPI web application that runs under Uvicorn and can be deployed with Docker.
+AASA is an end-to-end pipeline that analyzes a driving scene from a front camera and a lidar sensor, detects and localizes objects, and asks an LLM agent for a structured safety decision. Results are served through a FastAPI web application that runs under Uvicorn and can be deployed with Docker.
+
+> **Try it online:** the live web app is available at [aasa.huszka.hu](https://aasa.huszka.hu). No installation needed.
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)
@@ -15,6 +17,8 @@ An end-to-end pipeline that analyzes a driving scene from a front camera and a l
 - **Web interface** to pick a scene and frame, view the image with detections drawn on it, and read the decision.
 - **REST API** for integration with other tools.
 - **Docker support** for reproducible deployment.
+- **Automated CI/CD** with GitHub Actions: tests run on every push, and pushes to `main` build the Docker image, push it to Amazon ECR, and deploy it to a server.
+- **Rate limiting** on the API to limit abuse of the paid LLM endpoint.
 
 ## Project Structure
 
@@ -37,9 +41,13 @@ An end-to-end pipeline that analyzes a driving scene from a front camera and a l
 ├── scripts/
 │   └── render_sample.py   # Plots nuScenes sample data (manual use)
 ├── tests/                 # Offline unit tests
+├── .github/
+│   └── workflows/
+│       └── pipeline.yml   # CI/CD: tests, Docker build, ECR push, deploy
 ├── Dockerfile
 ├── docker-compose.yml
 ├── .dockerignore
+├── LICENSE
 └── requirements.txt
 ```
 
@@ -104,7 +112,24 @@ docker build -t aasa .
 docker run --rm -p 8000:8000 --env-file .env -v "$(pwd)/data:/app/data" aasa
 ```
 
-The `data/` folder is mounted into the container at runtime rather than copied into the image, which keeps the image small.
+The `data/` folder is mounted into the container at runtime rather than copied into the image, which keeps the image small. The Dockerfile installs CPU-only PyTorch to keep the image smaller than the default CUDA build.
+
+### With Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Compose mounts `./data` and `./.env` into the container and restarts it unless it is stopped manually.
+
+## CI/CD
+
+The workflow in [`.github/workflows/pipeline.yml`](.github/workflows/pipeline.yml) runs on every push:
+
+1. **test**: installs the requirements and runs `pytest`.
+2. **build-and-push**: runs only on pushes to `main`, after the tests pass. It builds the Docker image, tags it with the commit SHA, run number, and run attempt, and pushes it to Amazon ECR (`eu-north-1`). It then connects to the server over SSH, pulls the new image, replaces the running `aasa-app` container, and prunes old images.
+
+The workflow needs these GitHub repository secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `HOST`, `USERNAME`, and `SERVER_SSH_KEY`.
 
 ## API Reference
 
@@ -167,7 +192,9 @@ The tests run offline. They don't need the dataset or a Groq API key.
 
 ## Security Notes
 
-- The `/analyze` endpoint calls a paid LLM API on every request, and the application has no authentication. Add authentication and rate limiting before exposing it to the internet.
+- The `/analyze` endpoint calls a paid LLM API on every request, so it is rate limited to 3 requests per 10 seconds per client IP. All other endpoints default to 30 requests per day per client IP.
+- Clients are identified by the `CF-Connecting-IP` header when present, otherwise by the connecting address. The header is only trustworthy when the app sits behind Cloudflare, so only use this setup behind it.
+- Add authentication before exposing it to the internet.
 - Never commit `.env` or share your API key.
 
 ## License

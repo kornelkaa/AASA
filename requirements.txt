@@ -9,3 +9,4 @@ python-dotenv
 numpy
 pillow
 shapely>=2.0.0
+slowapi
