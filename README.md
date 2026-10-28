@@ -3,6 +3,8 @@
 AASA is an end-to-end pipeline that analyzes a driving scene from a front camera and a lidar sensor, detects and localizes objects, and asks an LLM agent for a structured safety decision. Results are served through a FastAPI web application that runs under Uvicorn and can be deployed with Docker.
 
 > **Try it online:** the live web app is available at [aasa.huszka.hu](https://aasa.huszka.hu). No installation needed.
+>
+> See the [infrastructure overview](docs/AWS_INFRASTRUCTURE.md)
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)
